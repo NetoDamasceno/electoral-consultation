@@ -1,53 +1,77 @@
 from playwright.sync_api import sync_playwright
 
-with sync_playwright() as playwright:
-    browser = playwright.chromium.launch(headless=False)
 
-    page = browser.new_page()
+URL_CONSULTA = (
+    "https://www.tse.jus.br/servicos-eleitorais/autoatendimento-eleitoral"
+    "?utm_source=chatgpt.com"
+    "#/atendimento-eleitor/consultar-situacao-titulo-eleitor"
+)
 
-    page.goto(
-        "https://www.tse.jus.br/servicos-eleitorais/autoatendimento-eleitoral"
-        "?utm_source=chatgpt.com"
-        "#/atendimento-eleitor/consultar-situacao-titulo-eleitor"
-    )
+
+def consultar_eleitor(page, nome, data_nascimento):
+    page.goto(URL_CONSULTA)
 
     campo_identificacao = page.get_by_placeholder(
         "Número do título eleitoral ou CPF ou nome"
     )
 
-    campo_identificacao.fill("Fulano de Tal")
+    campo_identificacao.fill(nome)
 
     campo_identificacao.press("Tab")
 
     page.wait_for_timeout(500)
 
-    page.keyboard.type("13/07/2005")
+    page.keyboard.type(data_nascimento)
 
     page.keyboard.press("Enter")
 
     page.wait_for_timeout(5000)
 
     aviso = page.get_by_text(
-    "Não foi possível localizar um eleitor com os dados informados."
+        "Não foi possível localizar um eleitor com os dados informados."
     )
 
     if aviso.is_visible():
-        print("Resultado: ELEITOR NÃO ENCONTRADO")
+         mensagem = (
+            "Não foi possível localizar um eleitor com os dados informados. "
+            "Verifique se todas as informações estão corretas."
+         )
 
-        page.goto(
-                "https://www.tse.jus.br/servicos-eleitorais/autoatendimento-eleitoral"
-                "?utm_source=chatgpt.com"
-                "#/atendimento-eleitor/consultar-situacao-titulo-eleitor"
-            )
+         page.goto(URL_CONSULTA)
+                
+         return {
+            "situacao": "NÃO ENCONTRADO",
+            "mensagem": mensagem,
+         }
 
-        page.wait_for_timeout(2000)
-    else:
-        situacao = page.locator("span[class^='situacao-']").inner_text()
-        mensagem = page.locator("span[class^='situacao-']").locator("..").inner_text()
+    situacao = page.locator(
+        "span[class^='situacao-']"
+    ).inner_text()
 
-        print(f"Situação encontrada: {situacao}")
-        print(f"Mensagem: {mensagem}")
+    mensagem = page.locator(
+        "span[class^='situacao-']"
+    ).locator("..").inner_text()
+
+    return {
+        "situacao": situacao,
+        "mensagem": mensagem,
+    }
+
+
+with sync_playwright() as playwright:
+    browser = playwright.chromium.launch(headless=False)
+
+    page = browser.new_page()
+
+    resultado = consultar_eleitor(
+        page,
+        "LUIZ ANTONIO SOARES DAMASCENO NETO",
+        "13/07/2005",
+    )
+
+    print(f"Situação: {resultado['situacao']}")
+    print(f"Mensagem: {resultado['mensagem']}")
 
     input("Pressione ENTER para fechar o navegador...")
 
-    #browser.close()
+    browser.close()

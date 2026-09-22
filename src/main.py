@@ -27,6 +27,12 @@ with sync_playwright() as playwright:
 
     page.wait_for_timeout(5000)
 
+    situacao = page.locator("span[class^='situacao-']").inner_text()
+    mensagem = page.locator("span[class^='situacao-']").locator("..").inner_text()
+
+    print(f"Situação encontrada: {situacao}")
+    print(f"Mensagem: {mensagem}")
+
     input("Pressione ENTER para fechar o navegador...")
 
     browser.close()

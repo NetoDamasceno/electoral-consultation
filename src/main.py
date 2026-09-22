@@ -15,7 +15,7 @@ with sync_playwright() as playwright:
         "Número do título eleitoral ou CPF ou nome"
     )
 
-    campo_identificacao.fill("LUIZ ANTONIO SOARES DAMASCENO NETO")
+    campo_identificacao.fill("Fulano de Tal")
 
     campo_identificacao.press("Tab")
 
@@ -27,12 +27,27 @@ with sync_playwright() as playwright:
 
     page.wait_for_timeout(5000)
 
-    situacao = page.locator("span[class^='situacao-']").inner_text()
-    mensagem = page.locator("span[class^='situacao-']").locator("..").inner_text()
+    aviso = page.get_by_text(
+    "Não foi possível localizar um eleitor com os dados informados."
+    )
 
-    print(f"Situação encontrada: {situacao}")
-    print(f"Mensagem: {mensagem}")
+    if aviso.is_visible():
+        print("Resultado: ELEITOR NÃO ENCONTRADO")
+
+        page.goto(
+                "https://www.tse.jus.br/servicos-eleitorais/autoatendimento-eleitoral"
+                "?utm_source=chatgpt.com"
+                "#/atendimento-eleitor/consultar-situacao-titulo-eleitor"
+            )
+
+        page.wait_for_timeout(2000)
+    else:
+        situacao = page.locator("span[class^='situacao-']").inner_text()
+        mensagem = page.locator("span[class^='situacao-']").locator("..").inner_text()
+
+        print(f"Situação encontrada: {situacao}")
+        print(f"Mensagem: {mensagem}")
 
     input("Pressione ENTER para fechar o navegador...")
 
-    browser.close()
+    #browser.close()

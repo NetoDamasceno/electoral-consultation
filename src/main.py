@@ -63,14 +63,24 @@ with sync_playwright() as playwright:
 
     page = browser.new_page()
 
-    resultado = consultar_eleitor(
+    resultado1 = consultar_eleitor(
         page,
         "LUIZ ANTONIO SOARES DAMASCENO NETO",
         "13/07/2005",
     )
 
-    print(f"Situação: {resultado['situacao']}")
-    print(f"Mensagem: {resultado['mensagem']}")
+    print(f"Consulta 1 - Situação: {resultado1['situacao']}")
+    print(f"Consulta 1 - Mensagem: {resultado1['mensagem']}")
+
+
+    resultado2 = consultar_eleitor(
+        page,
+        "Fulano de Tal",
+        "13/07/2005",
+    )
+
+    print(f"Consulta 2 - Situação: {resultado2['situacao']}")
+    print(f"Consulta 2 - Mensagem: {resultado2['mensagem']}")
 
     input("Pressione ENTER para fechar o navegador...")
 
